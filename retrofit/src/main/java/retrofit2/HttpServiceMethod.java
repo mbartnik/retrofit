@@ -128,6 +128,7 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
   }
 
   @Override final @Nullable ReturnT invoke(Object[] args) {
+    System.out.println("invoke(Object[] args), before Call<ResponseT> call = new OkHttpCall<>(requestFactory, args, callFactory, responseConverter)");
     Call<ResponseT> call = new OkHttpCall<>(requestFactory, args, callFactory, responseConverter);
     return adapt(call, args);
   }
@@ -145,6 +146,7 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
     }
 
     @Override protected ReturnT adapt(Call<ResponseT> call, Object[] args) {
+      System.out.println("adapt(Call<ResponseT> call, Object[] args), before return callAdapter.adapt(call)");
       return callAdapter.adapt(call);
     }
   }
@@ -160,6 +162,7 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
     }
 
     @Override protected Object adapt(Call<ResponseT> call, Object[] args) {
+      System.out.println("SuspendForResponse adapt(Call<ResponseT> call, Object[] args), before call = callAdapter.adapt(call);");
       call = callAdapter.adapt(call);
 
       //noinspection unchecked Checked by reflection inside RequestFactory.
@@ -168,8 +171,10 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
 
       // See SuspendForBody for explanation about this try/catch.
       try {
+        System.out.println("SuspendForResponse adapt(Call<ResponseT> call, Object[] args), before return KotlinExtensions.awaitResponse(call, continuation);");
         return KotlinExtensions.awaitResponse(call, continuation);
       } catch (Exception e) {
+        System.out.println("SuspendForResponse adapt(Call<ResponseT> call, Object[] args), before return KotlinExtensions.suspendAndThrow(e, continuation);");
         return KotlinExtensions.suspendAndThrow(e, continuation);
       }
     }
@@ -188,6 +193,7 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
     }
 
     @Override protected Object adapt(Call<ResponseT> call, Object[] args) {
+      System.out.println("SuspendForBody adapt(Call<ResponseT> call, Object[] args), before return callAdapter.adapt(call)");
       call = callAdapter.adapt(call);
 
       //noinspection unchecked Checked by reflection inside RequestFactory.
@@ -202,10 +208,14 @@ abstract class HttpServiceMethod<ResponseT, ReturnT> extends ServiceMethod<Retur
       // force suspension to occur so that it can be instead delivered to the continuation to
       // bypass this restriction.
       try {
+        System.out.println("SuspendForBody adapt(Call<ResponseT> call, Object[] args), before return isNullable\n" +
+                "            ? KotlinExtensions.awaitNullable(call, continuation)\n" +
+                "            : KotlinExtensions.await(call, continuation)");
         return isNullable
             ? KotlinExtensions.awaitNullable(call, continuation)
             : KotlinExtensions.await(call, continuation);
       } catch (Exception e) {
+        System.out.println("SuspendForBody adapt(Call<ResponseT> call, Object[] args), before return KotlinExtensions.suspendAndThrow(e, continuation)");
         return KotlinExtensions.suspendAndThrow(e, continuation);
       }
     }

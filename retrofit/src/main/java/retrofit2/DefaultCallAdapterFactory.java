@@ -53,6 +53,8 @@ final class DefaultCallAdapterFactory extends CallAdapter.Factory {
       }
 
       @Override public Call<Object> adapt(Call<Object> call) {
+        System.out.println("DefaultCallAdapterFactory adapt(Call<Object> call), is executor null:");
+        System.out.println(executor == null);
         return executor == null
             ? call
             : new ExecutorCallbackCall<>(executor, call);
@@ -71,9 +73,11 @@ final class DefaultCallAdapterFactory extends CallAdapter.Factory {
 
     @Override public void enqueue(final Callback<T> callback) {
       Objects.requireNonNull(callback, "callback == null");
+      System.out.println("ExecutorCallbackCall enqueue(final Callback<T> callback)");
 
       delegate.enqueue(new Callback<T>() {
         @Override public void onResponse(Call<T> call, final Response<T> response) {
+          System.out.println("ExecutorCallbackCall onResponse");
           callbackExecutor.execute(() -> {
             if (delegate.isCanceled()) {
               // Emulate OkHttp's behavior of throwing/delivering an IOException on cancellation.
@@ -85,6 +89,7 @@ final class DefaultCallAdapterFactory extends CallAdapter.Factory {
         }
 
         @Override public void onFailure(Call<T> call, final Throwable t) {
+          System.out.println("ExecutorCallbackCall onFailure");
           callbackExecutor.execute(() -> callback.onFailure(ExecutorCallbackCall.this, t));
         }
       });

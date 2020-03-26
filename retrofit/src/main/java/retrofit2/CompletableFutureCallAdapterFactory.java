@@ -65,12 +65,15 @@ final class CompletableFutureCallAdapterFactory extends CallAdapter.Factory {
 
     @Override public CompletableFuture<R> adapt(final Call<R> call) {
       final CompletableFuture<R> future = new CallCancelCompletableFuture<>(call);
+      System.out.println("BodyCallAdapter adapt(Call<Object> call), before call.enqueue");
 
       call.enqueue(new Callback<R>() {
         @Override public void onResponse(Call<R> call, Response<R> response) {
           if (response.isSuccessful()) {
+            System.out.println("BodyCallAdapter onResponse(Call<R> call, Response<R> response), response successful");
             future.complete(response.body());
           } else {
+            System.out.println("ResponseCallAdapter onResponse(Call<R> call, Response<R> response), response failed");
             future.completeExceptionally(new HttpException(response));
           }
         }
@@ -99,13 +102,18 @@ final class CompletableFutureCallAdapterFactory extends CallAdapter.Factory {
 
     @Override public CompletableFuture<Response<R>> adapt(final Call<R> call) {
       final CompletableFuture<Response<R>> future = new CallCancelCompletableFuture<>(call);
+      System.out.println("ResponseCallAdapter adapt(Call<Object> call), before call.enqueue");
 
       call.enqueue(new Callback<R>() {
         @Override public void onResponse(Call<R> call, Response<R> response) {
+          System.out.println("ResponseCallAdapter onResponse(Call<R> call, Response<R> response)");
+
           future.complete(response);
         }
 
         @Override public void onFailure(Call<R> call, Throwable t) {
+          System.out.println("ResponseCallAdapter onFailure(Call<R> call, Throwable t)");
+
           future.completeExceptionally(t);
         }
       });

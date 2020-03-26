@@ -140,12 +140,17 @@ public final class Retrofit {
           @Override public @Nullable Object invoke(Object proxy, Method method,
               @Nullable Object[] args) throws Throwable {
             // If the method is a method from Object then defer to normal invocation.
+            System.out.println("before if (method.getDeclaringClass() == Object.class)");
             if (method.getDeclaringClass() == Object.class) {
+              System.out.println("inside if (method.getDeclaringClass() == Object.class)");
               return method.invoke(this, args);
             }
+            System.out.println("before if if (platform.isDefaultMethod(method))");
             if (platform.isDefaultMethod(method)) {
+              System.out.println("inside if if (platform.isDefaultMethod(method))");
               return platform.invokeDefaultMethod(method, service, proxy, args);
             }
+            System.out.println("before return loadServiceMethod(method).invoke(args != null ? args : emptyArgs);");
             return loadServiceMethod(method).invoke(args != null ? args : emptyArgs);
           }
         });
